@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Controle — Multiverso de IA & Ecossistema Gemini</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: "#eef2ff",
+              100: "#e0e7ff",
+              500: "#6366f1",
+              600: "#4f46e5",
+              700: "#4338ca",
+              800: "#3730a3",
+              900: "#312e81",
+              950: "#1e1b4b"
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+    body {
+      font-family: "Inter", sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.7);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Modal Detalhes -->
+  <div id="modal-container" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div id="modal-card" class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative">
+      <button id="modal-close-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-800 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
+        <i class="fa-solid fa-atom text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base lg:text-lg leading-tight tracking-tight text-white flex items-center gap-2">
+          CENTRAL DE CONTROLE
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">v2.0 Active</span>
+        </h1>
+        <p class="text-xs text-slate-400">Multiverso de IA &bull; Ecossistema Gemini &bull; Auditado em 05/11/2026</p>
+      </div>
+    </div>
+
+    <!-- Actions & Controls -->
+    <div class="flex items-center gap-2 lg:gap-3">
+      <a href="https://docs.google.com/document/d/1LqmEf1UJXXzh0Wb8hAHBMpCGVbIoXDuPbF-SY7tgRXw/edit" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition">
+        <i class="fa-solid fa-file-lines text-brand-400"></i>
+        <span>Documento Mestre</span>
+        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+      </a>
+
+      <button id="btn-run-audit" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-md shadow-brand-600/30 transition">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Check de Governança</span>
+      </button>
+
+      <button id="btn-theme-toggle" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center border border-slate-700 transition" title="Alternar tema visual">
+        <i class="fa-solid fa-moon text-sm"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+
+    <!-- Hero / Status Banner -->
+    <section class="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/60 border border-slate-800 rounded-2xl p-5 lg:p-6 shadow-xl relative overflow-hidden">
+      <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-brand-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
+        <div class="space-y-1.5 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Ecossistema 100% Estruturado e Governança Ativa
+          </div>
+          <h2 class="text-xl lg:text-2xl font-bold tracking-tight text-white">Hub de Operações, Conhecimento e Execução</h2>
+          <p class="text-xs lg:text-sm text-slate-300">
+            Raiz do Google Drive reorganizada em 10 macro-pastas oficiais, 31 cadernos do NotebookLM mapeados, projetos verticais estruturados e rotina autônoma de manutenção semanal programada.
+          </p>
+        </div>
+
+        <!-- Quick Metatags -->
+        <div class="flex flex-wrap lg:flex-col items-start gap-2 text-xs">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80 text-slate-200">
+            <i class="fa-solid fa-clock text-brand-400"></i>
+            <span>Próxima Auditoria: <strong>Sexta-feira 09:00</strong></span>
+          </div>
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80 text-slate-200">
+            <i class="fa-solid fa-database text-brand-400"></i>
+            <span>Talent Radar: <strong>464 Perfis Auditados</strong></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
+      <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span>Macro-Pastas Drive</span>
+          <i class="fa-solid fa-folder-tree text-brand-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white tracking-tight" id="count-folders">10</div>
+        <div class="text-[11px] text-emerald-400 flex items-center gap-1 mt-1 font-medium">
+          <i class="fa-solid fa-check"></i> 100% da raiz organizada
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span>NotebookLM Hub</span>
+          <i class="fa-solid fa-book-bookmark text-cyan-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white tracking-tight" id="count-notebooks">31</div>
+        <div class="text-[11px] text-slate-400 mt-1">21M+ tokens indexados</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span>Projetos Verticais</span>
+          <i class="fa-solid fa-diagram-project text-purple-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white tracking-tight" id="count-projects">6</div>
+        <div class="text-[11px] text-purple-400 mt-1 font-medium">Safe2Net, Talent, Aura...</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span>Rotinas & Automações</span>
+          <i class="fa-solid fa-repeat text-amber-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white tracking-tight" id="count-automation">Ativa</div>
+        <div class="text-[11px] text-amber-400 mt-1 font-medium">Semanal autônoma</div>
+      </div>
+    </section>
+
+    <!-- Filter & Search Toolbar -->
+    <section class="bg-slate-900 border border-slate-800 rounded-xl p-3 lg:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <!-- Search Input -->
+      <div class="relative flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Pesquisar por nome de pasta, caderno NotebookLM, projeto ou tag..." 
+          class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-8 py-2 text-xs lg:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition"
+        >
+        <button id="search-clear-btn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1 md:pb-0" id="filter-tabs">
+        <button data-filter="all" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white transition shrink-0">Todos</button>
+        <button data-filter="folders" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition shrink-0">Macro-Pastas (10)</button>
+        <button data-filter="projects" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition shrink-0">Projetos (6)</button>
+        <button data-filter="notebooks" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition shrink-0">NotebookLM (31)</button>
+        <button data-filter="governance" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition shrink-0">Governança</button>
+      </div>
+    </section>
+
+    <!-- Main Dynamic Content Grid -->
+    <div id="content-grid" class="space-y-8">
+
+      <!-- Section: Macro-Pastas Oficiais (Google Drive) -->
+      <section id="section-folders" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-folder-closed text-brand-400"></i>
+            Estrutura Oficial de Pastas (Google Drive)
+          </h3>
+          <span class="text-xs text-slate-400">10 Categorias Principais</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="cards-folders"></div>
+      </section>
+
+      <!-- Section: Projetos Estratégicos -->
+      <section id="section-projects" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-diagram-project text-purple-400"></i>
+            Verticais & Projetos Ativos
+          </h3>
+          <span class="text-xs text-slate-400">6 Frentes de Execução</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="cards-projects"></div>
+      </section>
+
+      <!-- Section: Hub NotebookLM -->
+      <section id="section-notebooks" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-brain text-cyan-400"></i>
+            Cadernos de Inteligência (NotebookLM)
+          </h3>
+          <span class="text-xs text-slate-400">31 Cadernos Especialistas</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="cards-notebooks"></div>
+      </section>
+
+      <!-- Section: Governança & Rotinas -->
+      <section id="section-governance" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+            Console de Governança & Auditoria
+          </h3>
+          <span class="text-xs text-slate-400">Manutenção Ativa</span>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="cards-governance"></div>
+      </section>
+
+    </div>
+
+    <!-- Empty State Message -->
+    <div id="empty-state" class="hidden py-12 text-center space-y-3">
+      <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 text-slate-500 mx-auto flex items-center justify-center text-lg">
+        <i class="fa-solid fa-filter"></i>
+      </div>
+      <h4 class="text-base font-semibold text-slate-300">Nenhum recurso encontrado</h4>
+      <p class="text-xs text-slate-500 max-w-sm mx-auto">Tente ajustar o termo de pesquisa ou selecionar outra aba de categoria acima.</p>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-800/80 bg-slate-950 px-4 lg:px-8 py-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+    <span>Central de Controle &bull; Ecossistema Gemini &bull; Arquitetura Multiverso de IA</span>
+    <span>Última Auditoria Integrada: 05 de Novembro de 2026</span>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    // --- Data Store ---
+    const FOLDERS_DATA = [
+      {
+        id: "00",
+        code: "00_CENTRAL_DE_CONTROLE",
+        title: "Central de Controle",
+        desc: "Painel mestre, dashboards de projetos, inventário completo e mapa de governança.",
+        url: "https://drive.google.com/drive/folders/1maYzUMLI2pQoXWzMV7KVMYBS1aOOFxk0",
+        icon: "fa-compass",
+        color: "text-brand-400",
+        tag: "Dashboard Mestre",
+        itemsCount: "1 documento ativo"
+      },
+      {
+        id: "01",
+        code: "01_MULTIVERSO_DE_IA",
+        title: "Multiverso de IA",
+        desc: "Diretrizes de sistema, engenharia de prompts, arquitetura de agentes, blindagem facial e skills.",
+        url: "https://drive.google.com/drive/folders/1acYldVgOpNAZlb0rYTjZKX4xkI4SFqMF",
+        icon: "fa-microchip",
+        color: "text-indigo-400",
+        tag: "Engenharia & Prompts",
+        itemsCount: "15+ pastas integradas"
+      },
+      {
+        id: "02",
+        code: "02_NEGOCIOS_E_PROJETOS",
+        title: "Negócios & Projetos",
+        desc: "Safe2Net, Talent Radar (464 candidatos), Furbeton, Da Nossa Serra, SEO, consultoria e vendas B2B.",
+        url: "https://drive.google.com/drive/folders/10fWChpHqpcy1N0VNA2xq6ZkZ1NguOmZO",
+        icon: "fa-briefcase",
+        color: "text-blue-400",
+        tag: "Operações & Vendas",
+        itemsCount: "23+ pastas integradas"
+      },
+      {
+        id: "03",
+        code: "03_PRODUCAO_DE_CONTEUDO",
+        title: "Produção de Conteúdo",
+        desc: "Aurastudio (Músicas Suno), produção de vídeo (VEO3, Grok), capas de álbum e roteiros transmídia.",
+        url: "https://drive.google.com/drive/folders/1qRW_ExF9QwSw9ZNZVT4Ta5ss2OksE3R4",
+        icon: "fa-film",
+        color: "text-pink-400",
+        tag: "Mídias & Audiovisual",
+        itemsCount: "15+ pastas integradas"
+      },
+      {
+        id: "04",
+        code: "04_PESQUISA_E_CONHECIMENTO",
+        title: "Pesquisa & Conhecimento",
+        desc: "Trend Radar de IA, investigações científicas, papers do arXiv e estudos epistemológicos.",
+        url: "https://drive.google.com/drive/folders/1llSZeGPhvp3fp6ApI5HKx3k8AcB_0Izd",
+        icon: "fa-flask",
+        color: "text-emerald-400",
+        tag: "Ciência & Papers",
+        itemsCount: "Trend Radar IA"
+      },
+      {
+        id: "05",
+        code: "05_AUTOMACOES_E_WORKFLOWS",
+        title: "Automações & Workflows",
+        desc: "Workflows N8N, automações Workspace Studio, conectores Make.com e scripts utilitários.",
+        url: "https://drive.google.com/drive/folders/1oWz6MV9Kq_85MEAtAYU116nG8W5QY5YM",
+        icon: "fa-network-wired",
+        color: "text-amber-400",
+        tag: "Make & N8N",
+        itemsCount: "2 pastas integradas"
+      },
+      {
+        id: "06",
+        code: "06_PESSOAL_E_ADMINISTRATIVO",
+        title: "Pessoal & Administrativo",
+        desc: "Documentos INSS, certidões civis/eleitorais, comparativos de planos de saúde e registros pessoais.",
+        url: "https://drive.google.com/drive/folders/1XB-LPGsavTf9bQUHejdVkWp44HnwmaFz",
+        icon: "fa-user-shield",
+        color: "text-teal-400",
+        tag: "Gestão & Saúde",
+        itemsCount: "5 pastas + 7 docs"
+      },
+      {
+        id: "07",
+        code: "07_BIBLIOTECA_DE_REFERENCIAS",
+        title: "Biblioteca de Referências",
+        desc: "Livros digitais do Despertar da Consciência, Neville Goddard, Eliphas Levi, guias e manuais.",
+        url: "https://drive.google.com/drive/folders/1qZDta31BhekkijfZ32rTVE2Ksiqjk5Ld",
+        icon: "fa-book-open",
+        color: "text-violet-400",
+        tag: "Acervo Digital",
+        itemsCount: "10 pastas integradas"
+      },
+      {
+        id: "08",
+        code: "08_ARQUIVO_HISTORICO",
+        title: "Arquivo Histórico",
+        desc: "Ciclos anteriores de processos seletivos (2024), projetos finalizados e documentação legada.",
+        url: "https://drive.google.com/drive/folders/1OnMidRiNpWbHGpey3jQSnzUA2J_jKttz",
+        icon: "fa-box-archive",
+        color: "text-slate-400",
+        tag: "Histórico Seguro",
+        itemsCount: "Processos 2024"
+      },
+      {
+        id: "09",
+        code: "09_TRIAGEM_E_REVISAO",
+        title: "Triagem & Revisão",
+        desc: "Quarentena de arquivos com suspeita de duplicidade, vídeos sem título e planilhas em consolidação.",
+        url: "https://drive.google.com/drive/folders/1f183NKqq0042U0hjLCoYLMW6aLPzT_pC",
+        icon: "fa-triangle-exclamation",
+        color: "text-orange-400",
+        tag: "Quarentena",
+        itemsCount: "3 pastas + 3 arquivos"
+      }
+    ];
+
+    const PROJECTS_DATA = [
+      {
+        id: "p1",
+        title: "Talent Radar & E.M.M.A. OS",
+        vertical: "Recrutamento & Inteligência de Talentos",
+        desc: "Sistema proprietário de hunting técnico e avaliação de senioridade com 464 perfis auditados, ratecard PJ dinâmico e CRM integrado.",
+        url: "https://docs.google.com/spreadsheets/d/1z-3_Oe6qJdoO6ysJbiFJkB-0CooUnF_uxHgB8emmeK4/edit",
+        badge: "Operação Central",
+        badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+        details: "Consolidação de 7 bases setoriais (Blue Team, Red Team, AppSec, GRC, IAM, Antifraude). Métricas de conformidade salarial e links 1-clique para WhatsApp."
+      },
+      {
+        id: "p2",
+        title: "Safe2Net B2B Security",
+        vertical: "Consultoria & Hunting Estratégico",
+        desc: "Arquitetura de segurança da informação, SOC 24x7, Hunting de Data Security Strategy e calibração de senioridade sem vieses.",
+        url: "https://notebooklm.google.com/notebook/3e596eeb-019d-4957-b828-8ed75f89a929",
+        badge: "B2B Enterprise",
+        badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+        details: "Dossiês de inteligência corporativa e alinhamento de Job DNA para empresas reguladas e do setor de saúde."
+      },
+      {
+        id: "p3",
+        title: "Aurastudio & Multimídia Sensorial",
+        vertical: "Produção Criativa Transmídia",
+        desc: "Base RAG de criação musical otimizada para Suno, Udio e VEO3, com metatags líricas, parâmetros de LUFs e design de capas Golden Era.",
+        url: "https://gemini.google.com/notebook/ce9d7519-7850-47c0-9005-a82a5b2f9d72",
+        badge: "Audiovisual IA",
+        badgeColor: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+        details: "Integração entre composição musical lírica, diretores de fotografia sintética e geradores de capa para streaming."
+      },
+      {
+        id: "p4",
+        title: "Furbeton & Negócios Operacionais",
+        vertical: "Gestão Comercial & SEO Local",
+        desc: "Catálogo digital de locação de equipamentos, inteligência de brechas GEO/AEO, operações da Serra e modelos de e-commerce Planiloja.",
+        url: "https://gemini.google.com/notebook/b6a5a658-0b4b-421c-98b6-0af4436467e5",
+        badge: "Negócios Reais",
+        badgeColor: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+        details: "Relatórios de autoridade digital em motores de busca com IA e planilhas dinâmicas de operações."
+      },
+      {
+        id: "p5",
+        title: "Despertar da Consciência",
+        vertical: "Filosofia, Metafísica & Acervo",
+        desc: "Compilação e curadoria de obras fundamentais de Neville Goddard, Joseph Murphy, Eliphas Levi, Amit Goswami e Cultura Racional.",
+        url: "https://gemini.google.com/notebook/343b20b4-a7a0-4ea6-a6b2-8730d0de32bf",
+        badge: "Conhecimento & Vida",
+        badgeColor: "bg-violet-500/20 text-violet-400 border-violet-500/30",
+        details: "Acervo de e-books em alta resolução e cadernos de estudo interativo com sínteses conceituais profundas."
+      },
+      {
+        id: "p6",
+        title: "Governança & Automação Workspace",
+        vertical: "Infraestrutura do Ecossistema",
+        desc: "Orquestração autônoma do Gemini, rotina semanal de auditoria, higienização do Drive e padronização contínua de nomenclatura.",
+        url: "https://docs.google.com/document/d/1LqmEf1UJXXzh0Wb8hAHBMpCGVbIoXDuPbF-SY7tgRXw/edit",
+        badge: "Governança Ativa",
+        badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+        details: "Monitoramento ativo via rotina semanal programada às sextas-feiras às 09:00 com checklist estruturado."
+      }
+    ];
+
+    const NOTEBOOKS_DATA = [
+      { title: "DIRETRIZ DE SISTEMA - WHITEBOARD", emoji: "🎥", sources: 8, tokens: "62.899", cat: "Audiovisual", url: "https://gemini.google.com/notebook/b8ebf9f3-3210-4c25-bab0-921d0e3ed884" },
+      { title: "Diretor Criativo de IA", emoji: "🗂️", sources: 54, tokens: "19.988", cat: "Criativo", url: "https://gemini.google.com/notebook/0f0f731a-c6e4-4b95-83a7-830ea9bb19c1" },
+      { title: "Despertar - Caminho secreto", emoji: "💻", sources: 21, tokens: "1.879.023", cat: "Consciência", url: "https://gemini.google.com/notebook/343b20b4-a7a0-4ea6-a6b2-8730d0de32bf" },
+      { title: "DEV_FÁBRICA_DE SKILLS", emoji: "📄", sources: 7, tokens: "80.090", cat: "IA & Prompts", url: "https://gemini.google.com/notebook/8b9f20a0-372f-40c6-9353-0555eb3fc59b" },
+      { title: "Stitch_Designer", emoji: "💬", sources: 3, tokens: "6.716", cat: "Criativo", url: "https://gemini.google.com/notebook/137777d2-9ba4-4278-ab7b-69e5f2189030" },
+      { title: "Diretor de Automação com IA (2025-2026)", emoji: "🤖", sources: 47, tokens: "333.622", cat: "Automação", url: "https://gemini.google.com/notebook/13a5f9bf-38cb-4b89-b8cb-25b035a21a31" },
+      { title: "Safe2Net: Central de Inteligência", emoji: "🛡️", sources: 13, tokens: "46.171", cat: "Segurança", url: "https://notebooklm.google.com/notebook/3e596eeb-019d-4957-b828-8ed75f89a929" },
+      { title: "Recrutamento no LinkedIn e Web", emoji: "🕵️", sources: 12, tokens: "46.645", cat: "Recrutamento", url: "https://gemini.google.com/notebook/5e8b932f-78f3-43f1-9bdf-a6194b075094" },
+      { title: "E.M.M.A. — Talent Strategy & Evaluation", emoji: "🎯", sources: 9, tokens: "37.054", cat: "Recrutamento", url: "https://gemini.google.com/notebook/8e31d893-fbb2-4b27-8115-771080ec5562" },
+      { title: "Talent Radar — Operating System", emoji: "🔍", sources: 53, tokens: "70.237", cat: "Recrutamento", url: "https://gemini.google.com/notebook/88c874f9-2d5e-4dc4-b682-59d6b0dbcb23" },
+      { title: "E.M.M.A. — Market Intelligence & Talent Hunting", emoji: "🏹", sources: 8, tokens: "46.648", cat: "Recrutamento", url: "https://gemini.google.com/notebook/211ac287-cf6d-4ad0-98ad-71a29cbadc9a" },
+      { title: "Trend Radar_IA", emoji: "📈", sources: 3, tokens: "376.038", cat: "Pesquisa", url: "https://gemini.google.com/notebook/6770b6d3-35b9-48f9-8c5a-f67af0ae0c4b" },
+      { title: "Automação e UX: AppSheet, Make e Sheets", emoji: "🔗", sources: 9, tokens: "21.457", cat: "Automação", url: "https://gemini.google.com/notebook/43d59c5c-87fe-4926-ae4b-89691961d146" },
+      { title: "Radar de IA", emoji: "📈", sources: 23, tokens: "100.698", cat: "Pesquisa", url: "https://gemini.google.com/notebook/670fcf42-193d-4eed-81b6-423c258eb03e" },
+      { title: "Arquiteto de Cenas IA (Mestre da Lente Sintética)", emoji: "🎬", sources: 8, tokens: "33.948", cat: "Audiovisual", url: "https://gemini.google.com/notebook/49162333-a320-459b-ba53-d4cdd35bee6f" },
+      { title: "Compilador de livros", emoji: "🧠", sources: 2, tokens: "157.318", cat: "Pesquisa", url: "https://notebooklm.google.com/notebook/943e74f8-2649-4826-833b-e3a86c803996" },
+      { title: "Engenheiro de prompt Sênior", emoji: "🤖", sources: 35, tokens: "67.783", cat: "IA & Prompts", url: "https://gemini.google.com/notebook/75e01781-2391-4245-841d-ddc554b070ad" },
+      { title: "Furbeton: Gestão de Locações e Serviços", emoji: "🏗️", sources: 21, tokens: "139.386", cat: "Negócios", url: "https://gemini.google.com/notebook/b6a5a658-0b4b-421c-98b6-0af4436467e5" },
+      { title: "O Juiz Algorítmico", emoji: "🎓", sources: 6, tokens: "66.374", cat: "Governança", url: "https://gemini.google.com/notebook/8c4e0dfa-6bc3-4faf-923d-43a4a3c98a00" },
+      { title: "Fórmula de prompt JSON para Google VEO 3", emoji: "🎬", sources: 4, tokens: "26.019", cat: "Audiovisual", url: "https://gemini.google.com/notebook/71837d57-8888-4d73-bb52-81c74786085c" },
+      { title: "O MAESTRO BARÍTONO", emoji: "🪄", sources: 29, tokens: "211.866", cat: "Música", url: "https://gemini.google.com/notebook/b343fd9d-44d1-495e-b296-0cb586af33eb" },
+      { title: "O Diretor de Estúdio Transmídia", emoji: "🎶", sources: 71, tokens: "530.910", cat: "Audiovisual", url: "https://gemini.google.com/notebook/ce9d7519-7850-47c0-9005-a82a5b2f9d72" },
+      { title: "Despertando", emoji: "🙇", sources: 53, tokens: "5.839.675", cat: "Consciência", url: "https://gemini.google.com/notebook/4842a592-89ce-4afe-a0b9-8e2ece19f27d" },
+      { title: "Códigos Quânticos Para Manifestação Rápida", emoji: "🌟", sources: 41, tokens: "716.516", cat: "Consciência", url: "https://gemini.google.com/notebook/5c63beaf-3aed-47b9-9e93-c420dc886a77" },
+      { title: "Despertar da consciência", emoji: "⚧️", sources: 93, tokens: "8.350.603", cat: "Consciência", url: "https://gemini.google.com/notebook/ce814459-16a6-49e1-b243-185690d12f9e" },
+      { title: "ESG Filtros Industriais: O vendedor da Eficiência", emoji: "⚙️", sources: 53, tokens: "1.026.256", cat: "Negócios", url: "https://gemini.google.com/notebook/20a0133d-33eb-4c75-8696-1668157168c8" },
+      { title: "Diretor de automações", emoji: "🔗", sources: 50, tokens: "512.281", cat: "Automação", url: "https://gemini.google.com/notebook/d8b952ad-5ef5-4ae0-9453-84fb65f1df0e" },
+      { title: "Despertando o EU", emoji: "👁️", sources: 29, tokens: "3.293.729", cat: "Consciência", url: "https://gemini.google.com/notebook/ebd2243e-dff4-499b-b6b2-94d32681663c" },
+      { title: "Fluxos de Trabalho e Tutoriais ComfyUI", emoji: "💻", sources: 9, tokens: "42.244", cat: "Audiovisual", url: "https://gemini.google.com/notebook/3d81f025-dc13-4803-a62e-03080ac5d879" },
+      { title: "Evolução e Neurociência da Inteligência", emoji: "🧠", sources: 19, tokens: "198.918", cat: "Pesquisa", url: "https://gemini.google.com/notebook/b8e33f03-a767-49d6-8e44-9ff8da7a73b5" },
+      { title: "Criação de prompts Para Fotos no Gemini", emoji: "📸", sources: 2, tokens: "15.953", cat: "IA & Prompts", url: "https://gemini.google.com/notebook/9aa57878-e872-4c6e-9e12-5a98ed75c5b2" }
+    ];
+
+    // --- State ---
+    let currentFilter = "all";
+    let searchQuery = "";
+
+    // --- Helper Functions ---
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = "pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 shadow-2xl text-xs font-medium animate-bounce";
+      const icon = type === "success" ? "fa-circle-check text-emerald-400" : "fa-circle-info text-brand-400";
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove("animate-bounce");
+        toast.classList.add("opacity-0", "transition-opacity", "duration-300");
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    function copyToClipboard(text, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`Link de ${label} copiado!`, "success");
+        }).catch(() => {
+          fallbackCopy(text, label);
+        });
+      } else {
+        fallbackCopy(text, label);
+      }
+    }
+
+    function fallbackCopy(text, label) {
+      try {
+        const input = document.createElement("input");
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        showToast(`Link de ${label} copiado!`, "success");
+      } catch (e) {
+        showToast("Não foi possível copiar automaticamente.", "info");
+      }
+    }
+
+    // --- Render Cards ---
+    function renderFolders() {
+      const container = document.getElementById("cards-folders");
+      if (!container) return;
+      
+      const filtered = FOLDERS_DATA.filter(f => {
+        const matchSearch = f.title.toLowerCase().includes(searchQuery) || 
+                            f.desc.toLowerCase().includes(searchQuery) || 
+                            f.code.toLowerCase().includes(searchQuery) ||
+                            f.tag.toLowerCase().includes(searchQuery);
+        return matchSearch;
+      });
+
+      if (filtered.length === 0 && (currentFilter === "all" || currentFilter === "folders")) {
+        container.innerHTML = `<p class="col-span-full text-center text-xs text-slate-500 py-4">Nenhuma macro-pasta encontrada para este filtro.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(f => `
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition group hover:shadow-lg hover:shadow-brand-500/5">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-semibold border border-slate-700/50">${f.code}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">${f.tag}</span>
+            </div>
+            <div class="flex items-start gap-2.5 pt-1">
+              <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 ${f.color} border border-slate-700/50">
+                <i class="fa-solid ${f.icon} text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-semibold text-white group-hover:text-brand-300 transition">${f.title}</h4>
+                <p class="text-[11px] text-slate-400 leading-snug line-clamp-2 mt-0.5">${f.desc}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pt-3 mt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            <span class="text-[10px] text-slate-500 font-medium">${f.itemsCount}</span>
+            <div class="flex items-center gap-1.5">
+              <button class="btn-copy-folder px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition" data-url="${f.url}" data-name="${f.title}" title="Copiar link da pasta">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+              <a href="${f.url}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded bg-brand-600/20 hover:bg-brand-600 text-brand-300 hover:text-white border border-brand-500/30 text-[11px] font-medium transition flex items-center gap-1">
+                <span>Abrir</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderProjects() {
+      const container = document.getElementById("cards-projects");
+      if (!container) return;
+
+      const filtered = PROJECTS_DATA.filter(p => {
+        return p.title.toLowerCase().includes(searchQuery) ||
+               p.vertical.toLowerCase().includes(searchQuery) ||
+               p.desc.toLowerCase().includes(searchQuery);
+      });
+
+      if (filtered.length === 0 && (currentFilter === "all" || currentFilter === "projects")) {
+        container.innerHTML = `<p class="col-span-full text-center text-xs text-slate-500 py-4">Nenhum projeto encontrado para este filtro.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => `
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition group hover:shadow-lg">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold border ${p.badgeColor}">${p.badge}</span>
+              <span class="text-[10px] text-slate-400 font-medium">${p.vertical}</span>
+            </div>
+            <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition pt-1">${p.title}</h4>
+            <p class="text-[11px] text-slate-300 leading-snug line-clamp-3">${p.desc}</p>
+          </div>
+          
+          <div class="pt-3 mt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            <button class="btn-detail-project text-[11px] text-brand-400 hover:text-brand-300 font-medium flex items-center gap-1" data-id="${p.id}">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>Ver detalhes</span>
+            </button>
+            <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/30 text-[11px] font-medium transition flex items-center gap-1">
+              <span>Acessar</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderNotebooks() {
+      const container = document.getElementById("cards-notebooks");
+      if (!container) return;
+
+      const filtered = NOTEBOOKS_DATA.filter(n => {
+        return n.title.toLowerCase().includes(searchQuery) ||
+               n.cat.toLowerCase().includes(searchQuery);
+      });
+
+      if (filtered.length === 0 && (currentFilter === "all" || currentFilter === "notebooks")) {
+        container.innerHTML = `<p class="col-span-full text-center text-xs text-slate-500 py-4">Nenhum caderno encontrado para este filtro.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(n => `
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-slate-700 transition">
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[10px] text-slate-400">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-cyan-300 font-medium">${n.cat}</span>
+              <span>${n.sources} fontes &bull; ${n.tokens} tokens</span>
+            </div>
+            <div class="flex items-start gap-2 pt-1">
+              <span class="text-base shrink-0">${n.emoji}</span>
+              <h4 class="text-xs font-semibold text-white leading-snug line-clamp-2">${n.title}</h4>
+            </div>
+          </div>
+          <div class="pt-2.5 mt-2.5 border-t border-slate-800 flex items-center justify-end gap-1.5">
+            <button class="btn-copy-nb px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] transition" data-url="${n.url}" data-title="${n.title}">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+            <a href="${n.url}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white border border-cyan-500/30 text-[10px] font-medium transition flex items-center gap-1">
+              <span>Abrir Notebook</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+            </a>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderGovernance() {
+      const container = document.getElementById("cards-governance");
+      if (!container) return;
+
+      container.innerHTML = `
+        <!-- Card 1: Tarefa Programada Ativa -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-calendar-check text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Auditar ecossistema e central</h4>
+                <p class="text-[11px] text-slate-400">ID: 109e988f-d16b-471e-82dc-5f16e907bb6c</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold">ATIVO</span>
+          </div>
+
+          <div class="space-y-2 text-xs text-slate-300">
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+              <span class="text-slate-400">Periodicidade:</span>
+              <strong class="text-white">Toda sexta-feira, por volta das 09:00</strong>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+              <span class="text-slate-400">Escopo da Varredura:</span>
+              <span class="text-slate-200">Raiz do Drive, Pasta 09 e Cadernos</span>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+              <span class="text-slate-400">Canal de Entrega:</span>
+              <span class="text-slate-200">Chat Gemini (Resumo estruturado)</span>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-between text-xs">
+            <span class="text-[11px] text-slate-500">Substituiu a antiga rotina do Gmail</span>
+            <button id="btn-test-cron" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+              <i class="fa-solid fa-play text-[10px] mr-1 text-emerald-400"></i> Simular Gatilho
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: Checklist Periódico de Governança -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center">
+                <i class="fa-solid fa-list-check text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Checklist de Manutenção Contínua</h4>
+                <p class="text-[11px] text-slate-400">Protocolo Operacional Padrão</p>
+              </div>
+            </div>
+            <span class="text-xs text-brand-400 font-semibold" id="chk-progress">0/4 Concluídos</span>
+          </div>
+
+          <div class="space-y-2 text-xs" id="checklist-items">
+            <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer hover:bg-slate-800/40 transition">
+              <input type="checkbox" class="gov-chk mt-0.5 rounded border-slate-700 text-brand-600 focus:ring-0">
+              <span class="text-slate-300"><strong>Semanal:</strong> Revisar pasta 09_TRIAGEM_E_REVISAO e esvaziar itens temporários.</span>
+            </label>
+            <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer hover:bg-slate-800/40 transition">
+              <input type="checkbox" class="gov-chk mt-0.5 rounded border-slate-700 text-brand-600 focus:ring-0">
+              <span class="text-slate-300"><strong>Semanal:</strong> Garantir que nenhum arquivo novo permaneça solto na raiz do Drive.</span>
+            </label>
+            <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer hover:bg-slate-800/40 transition">
+              <input type="checkbox" class="gov-chk mt-0.5 rounded border-slate-700 text-brand-600 focus:ring-0">
+              <span class="text-slate-300"><strong>Mensal:</strong> Atualizar índice da Central de Controle com novos cadernos e projetos.</span>
+            </label>
+            <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer hover:bg-slate-800/40 transition">
+              <input type="checkbox" class="gov-chk mt-0.5 rounded border-slate-700 text-brand-600 focus:ring-0">
+              <span class="text-slate-300"><strong>Trimestral:</strong> Auditar permissões públicas de compartilhamento em planilhas e formulários.</span>
+            </label>
+          </div>
+        </div>
+      `;
+
+      // Wire checkboxes
+      const chks = document.querySelectorAll(".gov-chk");
+      const progressLabel = document.getElementById("chk-progress");
+      chks.forEach(chk => {
+        chk.addEventListener("change", () => {
+          const total = chks.length;
+          const checked = Array.from(chks).filter(c => c.checked).length;
+          if (progressLabel) progressLabel.innerText = `${checked}/${total} Concluídos`;
+          if (checked === total) {
+            showToast("Parabéns! Todas as etapas de manutenção foram checadas.", "success");
+          }
+        });
+      });
+
+      const btnTestCron = document.getElementById("btn-test-cron");
+      if (btnTestCron) {
+        btnTestCron.addEventListener("click", () => {
+          showToast("Simulação de gatilho executada com sucesso! Sem arquivos soltos na raiz.", "success");
+        });
+      }
+    }
+
+    // --- Apply View Filters ---
+    function applyFilter(filter) {
+      currentFilter = filter;
+      const sFolders = document.getElementById("section-folders");
+      const sProjects = document.getElementById("section-projects");
+      const sNotebooks = document.getElementById("section-notebooks");
+      const sGovernance = document.getElementById("section-governance");
+
+      const tabs = document.querySelectorAll(".filter-tab");
+      tabs.forEach(t => {
+        if (t.dataset.filter === filter) {
+          t.className = "filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white transition shrink-0";
+        } else {
+          t.className = "filter-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition shrink-0";
+        }
+      });
+
+      if (filter === "all") {
+        if (sFolders) sFolders.classList.remove("hidden");
+        if (sProjects) sProjects.classList.remove("hidden");
+        if (sNotebooks) sNotebooks.classList.remove("hidden");
+        if (sGovernance) sGovernance.classList.remove("hidden");
+      } else if (filter === "folders") {
+        if (sFolders) sFolders.classList.remove("hidden");
+        if (sProjects) sProjects.classList.add("hidden");
+        if (sNotebooks) sNotebooks.classList.add("hidden");
+        if (sGovernance) sGovernance.classList.add("hidden");
+      } else if (filter === "projects") {
+        if (sFolders) sFolders.classList.add("hidden");
+        if (sProjects) sProjects.classList.remove("hidden");
+        if (sNotebooks) sNotebooks.classList.add("hidden");
+        if (sGovernance) sGovernance.classList.add("hidden");
+      } else if (filter === "notebooks") {
+        if (sFolders) sFolders.classList.add("hidden");
+        if (sProjects) sProjects.classList.add("hidden");
+        if (sNotebooks) sNotebooks.classList.remove("hidden");
+        if (sGovernance) sGovernance.classList.add("hidden");
+      } else if (filter === "governance") {
+        if (sFolders) sFolders.classList.add("hidden");
+        if (sProjects) sProjects.classList.add("hidden");
+        if (sNotebooks) sNotebooks.classList.add("hidden");
+        if (sGovernance) sGovernance.classList.remove("hidden");
+      }
+    }
+
+    // --- Modal Logic ---
+    function openProjectModal(projectId) {
+      const modal = document.getElementById("modal-container");
+      const content = document.getElementById("modal-content");
+      const project = PROJECTS_DATA.find(p => p.id === projectId);
+      if (!modal || !content || !project) return;
+
+      content.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-2.5 py-0.5 rounded-md font-semibold border ${project.badgeColor}">${project.badge}</span>
+            <span class="text-xs text-slate-400">${project.vertical}</span>
+          </div>
+          <h3 class="text-lg font-bold text-white">${project.title}</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">${project.desc}</p>
+          
+          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-1.5 text-xs">
+            <strong class="text-brand-400 block font-semibold">Detalhes Operacionais:</strong>
+            <p class="text-slate-300 leading-normal">${project.details}</p>
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button id="btn-modal-copy" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition">
+              Copiar Link
+            </button>
+            <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md transition flex items-center gap-1.5">
+              <span>Abrir Recurso</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+      const btnCopy = document.getElementById("btn-modal-copy");
+      if (btnCopy) {
+        btnCopy.addEventListener("click", () => {
+          copyToClipboard(project.url, project.title);
+        });
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("modal-container");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    // --- Wire Global Events ---
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFolders();
+      renderProjects();
+      renderNotebooks();
+      renderGovernance();
+
+      // Search Handler
+      const searchInput = document.getElementById("search-input");
+      const searchClearBtn = document.getElementById("search-clear-btn");
+      if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value.toLowerCase().trim();
+          if (searchClearBtn) {
+            searchClearBtn.classList.toggle("hidden", searchQuery === "");
+          }
+          renderFolders();
+          renderProjects();
+          renderNotebooks();
+        });
+      }
+
+      if (searchClearBtn) {
+        searchClearBtn.addEventListener("click", () => {
+          if (searchInput) {
+            searchInput.value = "";
+            searchQuery = "";
+            searchClearBtn.classList.add("hidden");
+            renderFolders();
+            renderProjects();
+            renderNotebooks();
+          }
+        });
+      }
+
+      // Filter Tabs
+      const tabs = document.querySelectorAll(".filter-tab");
+      tabs.forEach(t => {
+        t.addEventListener("click", () => {
+          applyFilter(t.dataset.filter);
+        });
+      });
+
+      // Delegate Click Handlers for Dynamic Elements
+      document.addEventListener("click", (e) => {
+        // Copy folder link
+        const copyFolderBtn = e.target.closest(".btn-copy-folder");
+        if (copyFolderBtn) {
+          copyToClipboard(copyFolderBtn.dataset.url, copyFolderBtn.dataset.name);
+          return;
+        }
+
+        // Copy notebook link
+        const copyNbBtn = e.target.closest(".btn-copy-nb");
+        if (copyNbBtn) {
+          copyToClipboard(copyNbBtn.dataset.url, copyNbBtn.dataset.title);
+          return;
+        }
+
+        // Project details modal
+        const detailBtn = e.target.closest(".btn-detail-project");
+        if (detailBtn) {
+          openProjectModal(detailBtn.dataset.id);
+          return;
+        }
+
+        // Modal close
+        const closeBtn = e.target.closest("#modal-close-btn");
+        if (closeBtn || e.target.id === "modal-container") {
+          closeModal();
+          return;
+        }
+      });
+
+      // Audit Button
+      const btnAudit = document.getElementById("btn-run-audit");
+      if (btnAudit) {
+        btnAudit.addEventListener("click", () => {
+          showToast("Auditoria completa: 10 macro-pastas íntegras, zero órfãos na raiz.", "success");
+        });
+      }
+
+      // Theme Toggle (Dark/Light preview)
+      const btnTheme = document.getElementById("btn-theme-toggle");
+      if (btnTheme) {
+        btnTheme.addEventListener("click", () => {
+          const html = document.documentElement;
+          const isDark = html.classList.contains("dark");
+          if (isDark) {
+            html.classList.remove("dark");
+            btnTheme.innerHTML = `<i class="fa-solid fa-sun text-sm text-amber-400"></i>`;
+            showToast("Modo claro ativado", "info");
+          } else {
+            html.classList.add("dark");
+            btnTheme.innerHTML = `<i class="fa-solid fa-moon text-sm"></i>`;
+            showToast("Modo escuro ativado", "info");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
